@@ -10,6 +10,7 @@ import {
   Briefcase,
   DollarSign,
   Menu,
+  ArchiveRestore,
   X
 } from 'lucide-react';
 import { useProject } from '../../context/ProjectContext';
@@ -30,6 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
     { id: 'resources', label: '資源', icon: <Users size={20} /> },
     { id: 'budget', label: '預算', icon: <DollarSign size={20} /> },
     { id: 'risks', label: '風險', icon: <Briefcase size={20} /> },
+    { id: 'snapshots', label: '快照', icon: <ArchiveRestore size={20} /> },
     { id: 'reports', label: '報告', icon: <BarChart4 size={20} /> },
     { id: 'settings', label: '設定', icon: <Settings size={20} /> },
   ];

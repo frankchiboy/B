@@ -1,4 +1,4 @@
-import { createDir, writeBinaryFile, readBinaryFile, writeTextFile, readTextFile, exists } from '@tauri-apps/api/fs';
+import { createDir, writeBinaryFile, readBinaryFile, writeTextFile, readTextFile, exists, removeFile } from '@tauri-apps/api/fs';
 import { appLocalDataDir } from '@tauri-apps/api/path';
 import { Project } from '../types/projectTypes';
 import JSZip from 'jszip';
@@ -236,5 +236,32 @@ export async function createCrashRecoverySnapshot(project: Project): Promise<voi
     await createSnapshot(project, 'Crash Recovery');
   } catch (error) {
     console.error('Failed to create crash recovery snapshot:', error);
+  }
+}
+
+// 刪除快照
+export async function deleteSnapshot(snapshotPath: string): Promise<void> {
+  try {
+    const appDataDir = await appLocalDataDir();
+    const indexPath = `${appDataDir}${SNAPSHOT_DIR}/${SNAPSHOT_INDEX}`;
+
+    // 刪除檔案
+    await removeFile(snapshotPath);
+
+    // 更新索引
+    if (await exists(indexPath)) {
+      try {
+        const content = await readTextFile(indexPath);
+        let snapshots = JSON.parse(content);
+
+        snapshots = snapshots.filter((s: any) => s.path !== snapshotPath);
+
+        await writeTextFile(indexPath, JSON.stringify(snapshots, null, 2));
+      } catch (error) {
+        console.error('Failed to update snapshot index:', error);
+      }
+    }
+  } catch (error) {
+    console.error('Failed to delete snapshot:', error);
   }
 }

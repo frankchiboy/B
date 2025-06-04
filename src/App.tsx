@@ -12,6 +12,7 @@ const ResourcesView = lazy(() => import('./pages/ResourcesView').then(module => 
 const BudgetView = lazy(() => import('./pages/BudgetView').then(module => ({ default: module.BudgetView })));
 const ReportsView = lazy(() => import('./pages/ReportsView'));
 const RisksView = lazy(() => import('./pages/RisksView'));
+const SnapshotsView = lazy(() => import('./pages/SnapshotsView'));
 const Settings = lazy(() => import('./pages/Settings').then(module => ({ default: module.Settings })));
 const WelcomeOverlay = lazy(() => import('./components/overlays/WelcomeOverlay'));
 const MainMenu = lazy(() => import('./components/MainMenu'));
@@ -82,6 +83,8 @@ function AppContent() {
         return <BudgetView />;
       case 'risks':
         return <RisksView />;
+      case 'snapshots':
+        return <SnapshotsView />;
       case 'reports':
         return <ReportsView />;
       case 'settings':
