@@ -1,6 +1,13 @@
 import { createDir, writeBinaryFile, readBinaryFile, writeTextFile, readTextFile, exists, removeFile } from '@tauri-apps/api/fs';
 import { appLocalDataDir } from '@tauri-apps/api/path';
-import { Project } from '../types/projectTypes';
+import { Project, Task } from '../types/projectTypes';
+
+interface SnapshotInfo {
+  projectId: string;
+  timestamp: string;
+  type: string;
+  path: string;
+}
 import JSZip from 'jszip';
 
 const SNAPSHOT_DIR = 'backups';
@@ -142,7 +149,7 @@ async function updateSnapshotIndex(
 }
 
 // 取得專案的所有快照
-export async function getProjectSnapshots(projectId: string): Promise<any[]> {
+export async function getProjectSnapshots(projectId: string): Promise<SnapshotInfo[]> {
   try {
     const appDataDir = await appLocalDataDir();
     const indexPath = `${appDataDir}${SNAPSHOT_DIR}/${SNAPSHOT_INDEX}`;
@@ -152,10 +159,10 @@ export async function getProjectSnapshots(projectId: string): Promise<any[]> {
     }
     
     const content = await readTextFile(indexPath);
-    const snapshots = JSON.parse(content);
+    const snapshots: SnapshotInfo[] = JSON.parse(content);
     
     // 過濾出特定專案的快照
-    return snapshots.filter((snapshot: any) => snapshot.projectId === projectId);
+    return snapshots.filter(snapshot => snapshot.projectId === projectId);
   } catch (error) {
     console.error('Failed to get project snapshots:', error);
     return [];
@@ -229,7 +236,7 @@ export async function loadSnapshot(snapshotPath: string): Promise<Project | null
 }
 
 // 計算專案進度
-function calculateProgress(tasks: any[]): number {
+function calculateProgress(tasks: Task[]): number {
   if (!tasks || tasks.length === 0) return 0;
   
   const total = tasks.length;
@@ -260,9 +267,9 @@ export async function deleteSnapshot(snapshotPath: string): Promise<void> {
     if (await exists(indexPath)) {
       try {
         const content = await readTextFile(indexPath);
-        let snapshots = JSON.parse(content);
+        let snapshots: SnapshotInfo[] = JSON.parse(content);
 
-        snapshots = snapshots.filter((s: any) => s.path !== snapshotPath);
+        snapshots = snapshots.filter(s => s.path !== snapshotPath);
 
         await writeTextFile(indexPath, JSON.stringify(snapshots, null, 2));
       } catch (error) {

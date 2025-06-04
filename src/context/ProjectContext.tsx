@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { Project, Task, Resource, Risk, BudgetCategory, CostItem } from '../types/projectTypes';
-import { sampleProject } from '../data/sampleProject';
 import { UndoRedoManager, UndoItem } from '../services/undoRedoManager';
 import { saveProject, openProject } from '../services/fileSystem';
 import { createSnapshot, createCrashRecoverySnapshot } from '../services/snapshotManager';

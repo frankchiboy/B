@@ -27,7 +27,11 @@ export const CostsView: React.FC = () => {
     setNewCost({ ...newCost, task_id: '', amount: 0, invoice_id: '', note: '' });
   };
 
-  const handleUpdate = (cost: CostItem, field: keyof CostItem, value: any) => {
+  const handleUpdate = (
+    cost: CostItem,
+    field: keyof CostItem,
+    value: string | number
+  ) => {
     updateCost({ ...cost, [field]: value });
   };
 

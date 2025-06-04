@@ -18,13 +18,13 @@ interface RecentProject {
 const MainMenu: React.FC = () => {
   const { createNewProject, openProjectFile, setCurrentProject } = useProject();
   const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  // 讀取最近專案與復原檔所需的狀態
+  // 不特別顯示載入指示，仍保留錯誤處理流程
   const [recoveryFilePath, setRecoveryFilePath] = useState<string | null>(null);
   
   useEffect(() => {
     const loadData = async () => {
       try {
-        setIsLoading(true);
         const appDataDir = await appLocalDataDir();
         const recentProjectsPath = `${appDataDir}recent_projects.json`;
         
@@ -45,10 +45,9 @@ const MainMenu: React.FC = () => {
         const recoveryPath = await checkCrashRecoveryFiles();
         setRecoveryFilePath(recoveryPath);
         
-        setIsLoading(false);
+        // 不顯示額外的載入指示
       } catch (error) {
         console.error('Failed to load data:', error);
-        setIsLoading(false);
       }
     };
     
@@ -95,7 +94,7 @@ const MainMenu: React.FC = () => {
     }
   };
   
-  const handleCreateFromTemplate = (templateName: string) => {
+  const handleCreateFromTemplate = () => {
     // 實際實現中應載入特定範本
     createNewProject();
   };
@@ -179,7 +178,7 @@ const MainMenu: React.FC = () => {
               ].map(template => (
                 <button 
                   key={template.key}
-                  onClick={() => handleCreateFromTemplate(template.key)}
+                  onClick={handleCreateFromTemplate}
                   className="p-4 border border-slate-200 rounded-lg hover:border-purple-300 transition-colors flex items-center"
                 >
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center mr-3">

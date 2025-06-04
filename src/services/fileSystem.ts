@@ -2,7 +2,7 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { save, open } from '@tauri-apps/api/dialog';
 import { writeBinaryFile, readBinaryFile, writeTextFile, readTextFile, createDir, exists } from '@tauri-apps/api/fs';
 import { appLocalDataDir } from '@tauri-apps/api/path';
-import { Project } from '../types/projectTypes';
+import { Project, Task } from '../types/projectTypes';
 import JSZip from 'jszip';
 
 // 專案檔案儲存
@@ -124,7 +124,7 @@ export async function openProject(): Promise<Project | null> {
       // 先嘗試直接解析 JSON
       const projectData = JSON.parse(new TextDecoder().decode(content));
       
-      // 處理並返回專案資料
+    } catch {
       const project = {
         id: projectData.manifest?.project_uuid || crypto.randomUUID(),
         name: projectData.project?.project_name || "Untitled Project",
@@ -200,13 +200,16 @@ export async function openProject(): Promise<Project | null> {
           startDate: projectData.start_date,
           endDate: projectData.end_date,
           tasks: tasks,
-          resources: resources,
-          milestones: milestones,
-          teams: teams,
-          budget: budget,
-          risks: risks,
-          status: 'active',
-          progress: calculateProgress(tasks),
+function calculateProgress(tasks: Task[]): number {
+    const existingIndex = recentProjects.findIndex(
+      (p: { projectUUID: string }) => p.projectUUID === id
+    );
+    const crashRecoveries = snapshots
+      .filter((s: { type: string }) => s.type === 'Crash Recovery')
+      .sort(
+        (a: { timestamp: string }, b: { timestamp: string }) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
