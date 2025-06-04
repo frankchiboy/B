@@ -371,6 +371,32 @@ async function updateRecentProjects(name: string, path: string, id: string): Pro
     }
     
     // 更新或新增專案記錄
+// 從最近開啟列表中移除專案
+export async function removeRecentProject(path: string): Promise<void> {
+  try {
+    const appDataDir = await appLocalDataDir();
+    const recentProjectsPath = `${appDataDir}recent_projects.json`;
+
+    if (!(await exists(recentProjectsPath))) {
+      return;
+    }
+
+    const content = await readTextFile(recentProjectsPath);
+    let recentProjects = [];
+    try {
+      recentProjects = JSON.parse(content);
+    } catch {
+      return;
+    }
+
+    recentProjects = recentProjects.filter((p: { filePath: string }) => p.filePath !== path);
+
+    await writeTextFile(recentProjectsPath, JSON.stringify(recentProjects, null, 2));
+  } catch (error) {
+    console.error('Failed to remove recent project:', error);
+  }
+}
+
     const existingIndex = recentProjects.findIndex((p: any) => p.projectUUID === id);
     const newEntry = {
       fileName: name,

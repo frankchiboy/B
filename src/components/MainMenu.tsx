@@ -3,7 +3,7 @@ import { useProject } from '../context/ProjectContext';
 import { readTextFile, exists } from '@tauri-apps/api/fs';
 import { appLocalDataDir } from '@tauri-apps/api/path';
 import { Briefcase, FileText, Plus, FolderOpen, BookOpen } from 'lucide-react';
-import { checkCrashRecoveryFiles } from '../services/fileSystem';
+import { checkCrashRecoveryFiles, removeRecentProject } from '../services/fileSystem';
 import { loadSnapshot } from '../services/snapshotManager';
 import { confirm } from '@tauri-apps/api/dialog';
 
@@ -73,8 +73,8 @@ const MainMenu: React.FC = () => {
       });
       
       if (confirmed) {
-        // 實際實現中應移除該檔案
         setRecentProjects(prev => prev.filter(p => p.filePath !== filePath));
+        await removeRecentProject(filePath);
       }
     }
   };
