@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { save, open } from '@tauri-apps/api/dialog';
-import { writeTextFile, readTextFile, createDir, exists } from '@tauri-apps/api/fs';
+import { writeBinaryFile, readBinaryFile, writeTextFile, readTextFile, createDir, exists } from '@tauri-apps/api/fs';
 import { appLocalDataDir } from '@tauri-apps/api/path';
 import { Project } from '../types/projectTypes';
 import JSZip from 'jszip';
@@ -70,7 +70,7 @@ export async function saveProject(project: Project, path?: string): Promise<stri
           if (reader.result) {
             const binaryStr = reader.result as ArrayBuffer;
             const uint8Array = new Uint8Array(binaryStr);
-            await writeTextFile(path as string, uint8Array, { encoding: 'binary' });
+            await writeBinaryFile(path as string, uint8Array);
             
             // 更新最近專案列表
             await updateRecentProjects(project.name, path as string, project.id);
@@ -108,12 +108,13 @@ export async function openProject(): Promise<Project | null> {
     if (!path) return null; // 使用者取消
     
     // 讀取檔案
-    const content = await readTextFile(path as string, { encoding: 'binary' });
+    const contentBuffer = await readBinaryFile(path as string);
+    const content = new Uint8Array(contentBuffer);
     
     // 嘗試解析 JSON
     try {
       // 先嘗試直接解析 JSON
-      const projectData = JSON.parse(content);
+      const projectData = JSON.parse(new TextDecoder().decode(content));
       
       // 處理並返回專案資料
       const project = {

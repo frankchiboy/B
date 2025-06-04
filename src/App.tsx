@@ -10,7 +10,7 @@ const GanttView = lazy(() => import('./pages/GanttView').then(module => ({ defau
 const TasksView = lazy(() => import('./pages/TasksView').then(module => ({ default: module.TasksView })));
 const ResourcesView = lazy(() => import('./pages/ResourcesView').then(module => ({ default: module.ResourcesView })));
 const ReportsView = lazy(() => import('./pages/ReportsView'));
-const RisksView = lazy(() => import('./pages/RisksView').then(module => ({ default: module.RisksView })));
+const RisksView = lazy(() => import('./pages/RisksView'));
 const Settings = lazy(() => import('./pages/Settings').then(module => ({ default: module.Settings })));
 const WelcomeOverlay = lazy(() => import('./components/overlays/WelcomeOverlay'));
 const MainMenu = lazy(() => import('./components/MainMenu'));

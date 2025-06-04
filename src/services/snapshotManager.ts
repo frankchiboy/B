@@ -1,4 +1,4 @@
-import { createDir, writeTextFile, readTextFile, exists } from '@tauri-apps/api/fs';
+import { createDir, writeBinaryFile, readBinaryFile, writeTextFile, readTextFile, exists } from '@tauri-apps/api/fs';
 import { appLocalDataDir } from '@tauri-apps/api/path';
 import { Project } from '../types/projectTypes';
 import JSZip from 'jszip';
@@ -76,7 +76,7 @@ export async function createSnapshot(
           if (reader.result) {
             const binaryStr = reader.result as ArrayBuffer;
             const uint8Array = new Uint8Array(binaryStr);
-            await writeTextFile(path, uint8Array, { encoding: 'binary' });
+            await writeBinaryFile(path, uint8Array);
             
             // 更新索引檔案
             await updateSnapshotIndex(project.id, filename, timestamp, type, path);
@@ -164,9 +164,9 @@ export async function getProjectSnapshots(projectId: string): Promise<any[]> {
 export async function loadSnapshot(snapshotPath: string): Promise<Project | null> {
   try {
     // 讀取 ZIP 檔案
-    const content = await readTextFile(snapshotPath, { encoding: 'binary' });
+    const contentBuffer = await readBinaryFile(snapshotPath);
     const zip = new JSZip();
-    await zip.loadAsync(content);
+    await zip.loadAsync(contentBuffer);
     
     // 讀取各個 JSON 檔案
     const manifestFile = await zip.file("manifest.json")?.async("string");

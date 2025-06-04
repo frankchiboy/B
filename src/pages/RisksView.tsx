@@ -4,7 +4,7 @@ import { Risk } from '../types/projectTypes';
 import { Plus } from 'lucide-react';
 
 export const RisksView: React.FC = () => {
-  const { currentProject, addRisk, updateRisk, deleteRisk } = useProject();
+  const { currentProject, addRisk, deleteRisk } = useProject();
   const [showForm, setShowForm] = useState(false);
   const [newRisk, setNewRisk] = useState<Omit<Risk, 'id' | 'createdAt' | 'updatedAt'>>({
     name: '',
@@ -75,7 +75,12 @@ export const RisksView: React.FC = () => {
             <div className="flex gap-2">
               <select
                 value={newRisk.probability}
-                onChange={e => setNewRisk({ ...newRisk, probability: e.target.value as any })}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  setNewRisk({
+                    ...newRisk,
+                    probability: e.target.value as Risk['probability'],
+                  })
+                }
                 className="border p-2 flex-1"
               >
                 <option value="low">低</option>
@@ -84,7 +89,9 @@ export const RisksView: React.FC = () => {
               </select>
               <select
                 value={newRisk.impact}
-                onChange={e => setNewRisk({ ...newRisk, impact: e.target.value as any })}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  setNewRisk({ ...newRisk, impact: e.target.value as Risk['impact'] })
+                }
                 className="border p-2 flex-1"
               >
                 <option value="low">低</option>
@@ -144,4 +151,6 @@ export const RisksView: React.FC = () => {
     </div>
   );
 };
+
+export default RisksView;
 
