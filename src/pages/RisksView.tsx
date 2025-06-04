@@ -81,6 +81,13 @@ export const RisksView: React.FC = () => {
                     probability: e.target.value as Risk['probability'],
                   })
                 }
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  setNewRisk({ ...newRisk, impact: e.target.value as Risk['impact'] })
+                }
+                    ...newRisk,
+                    probability: e.target.value as Risk['probability'],
+                  })
+                }
                 className="border p-2 flex-1"
               >
                 <option value="low">低</option>
@@ -120,6 +127,8 @@ export const RisksView: React.FC = () => {
               儲存
             </button>
           </div>
+export default RisksView;
+
         </div>
       )}
 

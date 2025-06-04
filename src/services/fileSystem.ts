@@ -110,6 +110,7 @@ export async function openProject(): Promise<Project | null> {
     // 讀取檔案
     const contentBuffer = await readBinaryFile(path as string);
     const content = new Uint8Array(contentBuffer);
+      const projectData = JSON.parse(new TextDecoder().decode(content));
     
     // 嘗試解析 JSON
     try {
