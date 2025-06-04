@@ -425,10 +425,36 @@ export const sampleProject: Project = {
       },
       {
         id: "budget-cat-004",
-        name: "Testing & QA",
-        planned: 10000,
-        actual: 0
+      name: "Testing & QA",
+      planned: 10000,
+      actual: 0
       }
     ]
-  }
+  },
+  risks: [
+    {
+      id: "risk-001",
+      name: "資料遺失風險",
+      description: "使用者未儲存即關閉導致資料遺失",
+      probability: "medium",
+      impact: "high",
+      status: "identified",
+      mitigation: "增加自動備份頻率並提示儲存",
+      owner: "res-001",
+      createdAt: "2025-02-01T08:00:00Z",
+      updatedAt: "2025-02-01T08:00:00Z"
+    },
+    {
+      id: "risk-002",
+      name: "進度落後",
+      description: "開發進度可能因需求變更而延遲",
+      probability: "high",
+      impact: "medium",
+      status: "identified",
+      mitigation: "每週檢討進度並調整資源",
+      owner: "res-002",
+      createdAt: "2025-03-01T10:00:00Z",
+      updatedAt: "2025-03-01T10:00:00Z"
+    }
+  ]
 };

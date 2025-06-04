@@ -39,7 +39,8 @@ export async function saveProject(project: Project, path?: string): Promise<stri
       resources: project.resources,
       milestones: project.milestones,
       teams: project.teams,
-      budget: project.budget
+      budget: project.budget,
+      risks: project.risks
     };
     
     // 建立 ZIP 檔案
@@ -53,6 +54,7 @@ export async function saveProject(project: Project, path?: string): Promise<stri
     zip.file("milestones.json", JSON.stringify(projectPackage.milestones, null, 2));
     zip.file("teams.json", JSON.stringify(projectPackage.teams, null, 2));
     zip.file("budget.json", JSON.stringify(projectPackage.budget, null, 2));
+    zip.file("risklog.json", JSON.stringify(projectPackage.risks, null, 2));
     
     // 添加附件資料夾
     zip.folder("attachments");
@@ -131,6 +133,7 @@ export async function openProject(): Promise<Project | null> {
           currency: 'USD',
           categories: []
         },
+        risks: projectData.risks || [],
         status: 'active',
         progress: calculateProgress(projectData.tasks || []),
         createdAt: new Date().toISOString(),
@@ -156,6 +159,7 @@ export async function openProject(): Promise<Project | null> {
         const milestonesFile = await zipData.file("milestones.json")?.async("string");
         const teamsFile = await zipData.file("teams.json")?.async("string");
         const budgetFile = await zipData.file("budget.json")?.async("string");
+        const riskFile = await zipData.file("risklog.json")?.async("string");
         
         if (!manifestFile || !projectFile) {
           throw new Error("Invalid project file format");
@@ -174,6 +178,7 @@ export async function openProject(): Promise<Project | null> {
           currency: 'USD',
           categories: []
         };
+        const risks = riskFile ? JSON.parse(riskFile) : [];
         
         // 更新最近專案列表
         const project = {
@@ -187,6 +192,7 @@ export async function openProject(): Promise<Project | null> {
           milestones: milestones,
           teams: teams,
           budget: budget,
+          risks: risks,
           status: 'active',
           progress: calculateProgress(tasks),
           createdAt: new Date().toISOString(),

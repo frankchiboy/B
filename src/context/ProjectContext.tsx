@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
-import { Project, Task, Resource } from '../types/projectTypes';
+import { Project, Task, Resource, Risk } from '../types/projectTypes';
 import { sampleProject } from '../data/sampleProject';
 import { UndoRedoManager, UndoItem } from '../services/undoRedoManager';
 import { saveProject, openProject } from '../services/fileSystem';
@@ -22,6 +22,9 @@ interface ProjectContextType {
   addResource: (resource: Resource) => void;
   updateResource: (resource: Resource) => void;
   deleteResource: (resourceId: string) => void;
+  addRisk: (risk: Risk) => void;
+  updateRisk: (risk: Risk) => void;
+  deleteRisk: (riskId: string) => void;
   
   // 檔案操作
   saveCurrentProject: () => Promise<string>;
@@ -226,6 +229,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         currency: 'USD',
         categories: []
       },
+      risks: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -471,6 +475,42 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     updateProject(updatedProject);
   };
 
+  const addRisk = (risk: Risk) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const updatedProject = {
+      ...currentProject,
+      risks: [...currentProject.risks, risk]
+    };
+    updateProject(updatedProject);
+  };
+
+  const updateRisk = (updatedRisk: Risk) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const updatedProject = {
+      ...currentProject,
+      risks: currentProject.risks.map(r => r.id === updatedRisk.id ? updatedRisk : r)
+    };
+    updateProject(updatedProject);
+  };
+
+  const deleteRisk = (riskId: string) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const updatedProject = {
+      ...currentProject,
+      risks: currentProject.risks.filter(r => r.id !== riskId)
+    };
+    updateProject(updatedProject);
+  };
+
   return (
     <ProjectContext.Provider value={{
       currentProject,
@@ -491,6 +531,9 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       addResource,
       updateResource,
       deleteResource,
+      addRisk,
+      updateRisk,
+      deleteRisk,
       saveCurrentProject,
       saveProjectAs,
       openProjectFile,

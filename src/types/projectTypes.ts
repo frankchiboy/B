@@ -11,6 +11,7 @@ export interface Project {
   milestones: Milestone[];
   teams: Team[];
   budget: Budget;
+  risks: Risk[];
   createdAt: string;
   updatedAt: string;
 }

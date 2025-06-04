@@ -60,6 +60,7 @@ export async function createSnapshot(
     zip.file("milestones.json", JSON.stringify(project.milestones, null, 2));
     zip.file("teams.json", JSON.stringify(project.teams, null, 2));
     zip.file("budget.json", JSON.stringify(project.budget, null, 2));
+    zip.file("risklog.json", JSON.stringify(project.risks, null, 2));
     
     // 添加附件資料夾
     zip.folder("attachments");
@@ -175,6 +176,7 @@ export async function loadSnapshot(snapshotPath: string): Promise<Project | null
     const milestonesFile = await zip.file("milestones.json")?.async("string");
     const teamsFile = await zip.file("teams.json")?.async("string");
     const budgetFile = await zip.file("budget.json")?.async("string");
+    const riskFile = await zip.file("risklog.json")?.async("string");
     
     if (!manifestFile || !projectFile) {
       throw new Error("Invalid snapshot file format");
@@ -193,6 +195,7 @@ export async function loadSnapshot(snapshotPath: string): Promise<Project | null
       currency: 'USD',
       categories: []
     };
+    const risks = riskFile ? JSON.parse(riskFile) : [];
     
     return {
       id: manifest.project_uuid,
@@ -205,6 +208,7 @@ export async function loadSnapshot(snapshotPath: string): Promise<Project | null
       milestones: milestones,
       teams: teams,
       budget: budget,
+      risks: risks,
       status: 'active',
       progress: calculateProgress(tasks),
       createdAt: manifest.created_at,

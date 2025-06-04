@@ -27,6 +27,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
     { id: 'gantt', label: '甘特圖', icon: <GanttChart size={20} /> },
     { id: 'tasks', label: '任務', icon: <CheckSquare size={20} /> },
     { id: 'resources', label: '資源', icon: <Users size={20} /> },
+    { id: 'risks', label: '風險', icon: <Briefcase size={20} /> },
     { id: 'reports', label: '報告', icon: <BarChart4 size={20} /> },
     { id: 'settings', label: '設定', icon: <Settings size={20} /> },
   ];
