@@ -9,6 +9,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ defau
 const GanttView = lazy(() => import('./pages/GanttView').then(module => ({ default: module.GanttView })));
 const TasksView = lazy(() => import('./pages/TasksView').then(module => ({ default: module.TasksView })));
 const ResourcesView = lazy(() => import('./pages/ResourcesView').then(module => ({ default: module.ResourcesView })));
+const BudgetView = lazy(() => import('./pages/BudgetView').then(module => ({ default: module.BudgetView })));
 const ReportsView = lazy(() => import('./pages/ReportsView'));
 const RisksView = lazy(() => import('./pages/RisksView'));
 const Settings = lazy(() => import('./pages/Settings').then(module => ({ default: module.Settings })));
@@ -77,6 +78,8 @@ function AppContent() {
         return <TasksView />;
       case 'resources':
         return <ResourcesView />;
+      case 'budget':
+        return <BudgetView />;
       case 'risks':
         return <RisksView />;
       case 'reports':

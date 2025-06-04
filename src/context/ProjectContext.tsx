@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
-import { Project, Task, Resource, Risk } from '../types/projectTypes';
+import { Project, Task, Resource, Risk, BudgetCategory } from '../types/projectTypes';
 import { sampleProject } from '../data/sampleProject';
 import { UndoRedoManager, UndoItem } from '../services/undoRedoManager';
 import { saveProject, openProject } from '../services/fileSystem';
@@ -22,6 +22,9 @@ interface ProjectContextType {
   addResource: (resource: Resource) => void;
   updateResource: (resource: Resource) => void;
   deleteResource: (resourceId: string) => void;
+  addBudgetCategory: (category: BudgetCategory) => void;
+  updateBudgetCategory: (category: BudgetCategory) => void;
+  deleteBudgetCategory: (categoryId: string) => void;
   addRisk: (risk: Risk) => void;
   updateRisk: (risk: Risk) => void;
   deleteRisk: (riskId: string) => void;
@@ -475,6 +478,60 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     updateProject(updatedProject);
   };
 
+  const recalcBudget = (categories: BudgetCategory[]) => {
+    const total = categories.reduce((sum, c) => sum + c.planned, 0);
+    const spent = categories.reduce((sum, c) => sum + c.actual, 0);
+    return {
+      total,
+      spent,
+      remaining: total - spent,
+      currency: currentProject?.budget.currency || 'USD',
+      categories
+    };
+  };
+
+  const addBudgetCategory = (category: BudgetCategory) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const categories = [...currentProject.budget.categories, category];
+    const budget = recalcBudget(categories);
+    const updatedProject = {
+      ...currentProject,
+      budget
+    };
+    updateProject(updatedProject);
+  };
+
+  const updateBudgetCategory = (category: BudgetCategory) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const categories = currentProject.budget.categories.map(c => c.id === category.id ? category : c);
+    const budget = recalcBudget(categories);
+    const updatedProject = {
+      ...currentProject,
+      budget
+    };
+    updateProject(updatedProject);
+  };
+
+  const deleteBudgetCategory = (categoryId: string) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const categories = currentProject.budget.categories.filter(c => c.id !== categoryId);
+    const budget = recalcBudget(categories);
+    const updatedProject = {
+      ...currentProject,
+      budget
+    };
+    updateProject(updatedProject);
+  };
+
   const addRisk = (risk: Risk) => {
     if (!currentProject) return;
 
@@ -531,6 +588,9 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       addResource,
       updateResource,
       deleteResource,
+      addBudgetCategory,
+      updateBudgetCategory,
+      deleteBudgetCategory,
       addRisk,
       updateRisk,
       deleteRisk,
