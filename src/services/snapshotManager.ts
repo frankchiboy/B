@@ -60,6 +60,7 @@ export async function createSnapshot(
     zip.file("milestones.json", JSON.stringify(project.milestones, null, 2));
     zip.file("teams.json", JSON.stringify(project.teams, null, 2));
     zip.file("budget.json", JSON.stringify(project.budget, null, 2));
+    zip.file("costs.json", JSON.stringify(project.costs, null, 2));
     zip.file("risklog.json", JSON.stringify(project.risks, null, 2));
     
     // 添加附件資料夾
@@ -176,6 +177,7 @@ export async function loadSnapshot(snapshotPath: string): Promise<Project | null
     const milestonesFile = await zip.file("milestones.json")?.async("string");
     const teamsFile = await zip.file("teams.json")?.async("string");
     const budgetFile = await zip.file("budget.json")?.async("string");
+    const costsFile = await zip.file("costs.json")?.async("string");
     const riskFile = await zip.file("risklog.json")?.async("string");
     
     if (!manifestFile || !projectFile) {
@@ -195,6 +197,7 @@ export async function loadSnapshot(snapshotPath: string): Promise<Project | null
       currency: 'USD',
       categories: []
     };
+    const costs = costsFile ? JSON.parse(costsFile) : [];
     const risks = riskFile ? JSON.parse(riskFile) : [];
     
     return {
@@ -208,6 +211,7 @@ export async function loadSnapshot(snapshotPath: string): Promise<Project | null
       milestones: milestones,
       teams: teams,
       budget: budget,
+      costs: costs,
       risks: risks,
       status: 'active',
       progress: calculateProgress(tasks),

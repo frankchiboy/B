@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
-import { Project, Task, Resource, Risk, BudgetCategory } from '../types/projectTypes';
+import { Project, Task, Resource, Risk, BudgetCategory, CostItem } from '../types/projectTypes';
 import { sampleProject } from '../data/sampleProject';
 import { UndoRedoManager, UndoItem } from '../services/undoRedoManager';
 import { saveProject, openProject } from '../services/fileSystem';
@@ -28,6 +28,9 @@ interface ProjectContextType {
   addRisk: (risk: Risk) => void;
   updateRisk: (risk: Risk) => void;
   deleteRisk: (riskId: string) => void;
+  addCost: (cost: CostItem) => void;
+  updateCost: (cost: CostItem) => void;
+  deleteCost: (costId: string) => void;
   
   // 檔案操作
   saveCurrentProject: () => Promise<string>;
@@ -232,6 +235,7 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         currency: 'USD',
         categories: []
       },
+      costs: [],
       risks: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -532,6 +536,42 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     updateProject(updatedProject);
   };
 
+  const addCost = (cost: CostItem) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const updatedProject = {
+      ...currentProject,
+      costs: [...currentProject.costs, cost]
+    };
+    updateProject(updatedProject);
+  };
+
+  const updateCost = (updatedCost: CostItem) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const updatedProject = {
+      ...currentProject,
+      costs: currentProject.costs.map(c => c.id === updatedCost.id ? updatedCost : c)
+    };
+    updateProject(updatedProject);
+  };
+
+  const deleteCost = (costId: string) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const updatedProject = {
+      ...currentProject,
+      costs: currentProject.costs.filter(c => c.id !== costId)
+    };
+    updateProject(updatedProject);
+  };
+
   const addRisk = (risk: Risk) => {
     if (!currentProject) return;
 
@@ -594,6 +634,9 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       addRisk,
       updateRisk,
       deleteRisk,
+      addCost,
+      updateCost,
+      deleteCost,
       saveCurrentProject,
       saveProjectAs,
       openProjectFile,

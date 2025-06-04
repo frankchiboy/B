@@ -431,6 +431,30 @@ export const sampleProject: Project = {
       }
     ]
   },
+  costs: [
+    {
+      id: "cost-001",
+      task_id: "task-004",
+      amount: 12000,
+      category: "人事",
+      currency: "USD",
+      date: "2025-03-20",
+      invoice_id: "INV-2025-0320-A",
+      status: "pending",
+      note: "Frontend contractor"
+    },
+    {
+      id: "cost-002",
+      task_id: "task-005",
+      amount: 8000,
+      category: "設備",
+      currency: "USD",
+      date: "2025-04-05",
+      invoice_id: "INV-2025-0405-B",
+      status: "paid",
+      note: "Server expenses"
+    }
+  ],
   risks: [
     {
       id: "risk-001",

@@ -11,6 +11,7 @@ export interface Project {
   milestones: Milestone[];
   teams: Team[];
   budget: Budget;
+  costs: CostItem[];
   risks: Risk[];
   createdAt: string;
   updatedAt: string;
@@ -92,6 +93,18 @@ export interface BudgetCategory {
   name: string;
   planned: number;
   actual: number;
+}
+
+export interface CostItem {
+  id: string;
+  task_id: string;
+  amount: number;
+  category: '人事' | '設備' | '其他';
+  currency: string;
+  date: string;
+  invoice_id?: string;
+  status: 'pending' | 'paid';
+  note?: string;
 }
 
 export interface Attachment {

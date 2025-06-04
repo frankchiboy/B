@@ -10,6 +10,7 @@ const GanttView = lazy(() => import('./pages/GanttView').then(module => ({ defau
 const TasksView = lazy(() => import('./pages/TasksView').then(module => ({ default: module.TasksView })));
 const ResourcesView = lazy(() => import('./pages/ResourcesView').then(module => ({ default: module.ResourcesView })));
 const BudgetView = lazy(() => import('./pages/BudgetView').then(module => ({ default: module.BudgetView })));
+const CostsView = lazy(() => import('./pages/CostsView').then(module => ({ default: module.CostsView })));
 const ReportsView = lazy(() => import('./pages/ReportsView'));
 const RisksView = lazy(() => import('./pages/RisksView'));
 const SnapshotsView = lazy(() => import('./pages/SnapshotsView'));
@@ -81,6 +82,8 @@ function AppContent() {
         return <ResourcesView />;
       case 'budget':
         return <BudgetView />;
+      case 'costs':
+        return <CostsView />;
       case 'risks':
         return <RisksView />;
       case 'snapshots':

@@ -30,6 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView })
     { id: 'tasks', label: '任務', icon: <CheckSquare size={20} /> },
     { id: 'resources', label: '資源', icon: <Users size={20} /> },
     { id: 'budget', label: '預算', icon: <DollarSign size={20} /> },
+    { id: 'costs', label: '成本', icon: <DollarSign size={20} /> },
     { id: 'risks', label: '風險', icon: <Briefcase size={20} /> },
     { id: 'snapshots', label: '快照', icon: <ArchiveRestore size={20} /> },
     { id: 'reports', label: '報告', icon: <BarChart4 size={20} /> },

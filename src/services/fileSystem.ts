@@ -40,7 +40,8 @@ export async function saveProject(project: Project, path?: string): Promise<stri
       milestones: project.milestones,
       teams: project.teams,
       budget: project.budget,
-      risks: project.risks
+      risks: project.risks,
+      costs: project.costs
     };
     
     // 建立 ZIP 檔案
@@ -55,6 +56,7 @@ export async function saveProject(project: Project, path?: string): Promise<stri
     zip.file("teams.json", JSON.stringify(projectPackage.teams, null, 2));
     zip.file("budget.json", JSON.stringify(projectPackage.budget, null, 2));
     zip.file("risklog.json", JSON.stringify(projectPackage.risks, null, 2));
+    zip.file("costs.json", JSON.stringify(projectPackage.costs, null, 2));
     
     // 添加附件資料夾
     zip.folder("attachments");
@@ -111,6 +113,10 @@ export async function openProject(): Promise<Project | null> {
     const contentBuffer = await readBinaryFile(path as string);
     const content = new Uint8Array(contentBuffer);
       const projectData = JSON.parse(new TextDecoder().decode(content));
+        costs: projectData.costs || [],
+        const costsFile = await zipData.file("costs.json")?.async("string");
+        const costs = costsFile ? JSON.parse(costsFile) : [];
+          costs: costs,
     
     // 嘗試解析 JSON
     try {
