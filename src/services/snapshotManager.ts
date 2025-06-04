@@ -1,6 +1,13 @@
-import { createDir, writeTextFile, readTextFile, exists } from '@tauri-apps/api/fs';
+import { createDir, writeBinaryFile, readBinaryFile, writeTextFile, readTextFile, exists, removeFile } from '@tauri-apps/api/fs';
 import { appLocalDataDir } from '@tauri-apps/api/path';
-import { Project } from '../types/projectTypes';
+import { Project, Task } from '../types/projectTypes';
+
+interface SnapshotInfo {
+  projectId: string;
+  timestamp: string;
+  type: string;
+  path: string;
+}
 import JSZip from 'jszip';
 
 const SNAPSHOT_DIR = 'backups';
@@ -60,6 +67,9 @@ export async function createSnapshot(
     zip.file("milestones.json", JSON.stringify(project.milestones, null, 2));
     zip.file("teams.json", JSON.stringify(project.teams, null, 2));
     zip.file("budget.json", JSON.stringify(project.budget, null, 2));
+    // 使用 cost.json 以符合封裝規範
+    zip.file("cost.json", JSON.stringify(project.costs, null, 2));
+    zip.file("risklog.json", JSON.stringify(project.risks, null, 2));
     
     // 添加附件資料夾
     zip.folder("attachments");
@@ -75,7 +85,7 @@ export async function createSnapshot(
           if (reader.result) {
             const binaryStr = reader.result as ArrayBuffer;
             const uint8Array = new Uint8Array(binaryStr);
-            await writeTextFile(path, uint8Array, { encoding: 'binary' });
+            await writeBinaryFile(path, uint8Array);
             
             // 更新索引檔案
             await updateSnapshotIndex(project.id, filename, timestamp, type, path);
@@ -139,7 +149,7 @@ async function updateSnapshotIndex(
 }
 
 // 取得專案的所有快照
-export async function getProjectSnapshots(projectId: string): Promise<any[]> {
+export async function getProjectSnapshots(projectId: string): Promise<SnapshotInfo[]> {
   try {
     const appDataDir = await appLocalDataDir();
     const indexPath = `${appDataDir}${SNAPSHOT_DIR}/${SNAPSHOT_INDEX}`;
@@ -149,10 +159,10 @@ export async function getProjectSnapshots(projectId: string): Promise<any[]> {
     }
     
     const content = await readTextFile(indexPath);
-    const snapshots = JSON.parse(content);
+    const snapshots: SnapshotInfo[] = JSON.parse(content);
     
     // 過濾出特定專案的快照
-    return snapshots.filter((snapshot: any) => snapshot.projectId === projectId);
+    return snapshots.filter(snapshot => snapshot.projectId === projectId);
   } catch (error) {
     console.error('Failed to get project snapshots:', error);
     return [];
@@ -163,9 +173,9 @@ export async function getProjectSnapshots(projectId: string): Promise<any[]> {
 export async function loadSnapshot(snapshotPath: string): Promise<Project | null> {
   try {
     // 讀取 ZIP 檔案
-    const content = await readTextFile(snapshotPath, { encoding: 'binary' });
+    const contentBuffer = await readBinaryFile(snapshotPath);
     const zip = new JSZip();
-    await zip.loadAsync(content);
+    await zip.loadAsync(contentBuffer);
     
     // 讀取各個 JSON 檔案
     const manifestFile = await zip.file("manifest.json")?.async("string");
@@ -175,6 +185,11 @@ export async function loadSnapshot(snapshotPath: string): Promise<Project | null
     const milestonesFile = await zip.file("milestones.json")?.async("string");
     const teamsFile = await zip.file("teams.json")?.async("string");
     const budgetFile = await zip.file("budget.json")?.async("string");
+    // 同時檢查舊名 costs.json 與新名 cost.json
+    const costsFile =
+      (await zip.file("cost.json")?.async("string")) ||
+      (await zip.file("costs.json")?.async("string"));
+    const riskFile = await zip.file("risklog.json")?.async("string");
     
     if (!manifestFile || !projectFile) {
       throw new Error("Invalid snapshot file format");
@@ -193,6 +208,8 @@ export async function loadSnapshot(snapshotPath: string): Promise<Project | null
       currency: 'USD',
       categories: []
     };
+    const costs = costsFile ? JSON.parse(costsFile) : [];
+    const risks = riskFile ? JSON.parse(riskFile) : [];
     
     return {
       id: manifest.project_uuid,
@@ -205,6 +222,8 @@ export async function loadSnapshot(snapshotPath: string): Promise<Project | null
       milestones: milestones,
       teams: teams,
       budget: budget,
+      costs: costs,
+      risks: risks,
       status: 'active',
       progress: calculateProgress(tasks),
       createdAt: manifest.created_at,
@@ -217,7 +236,7 @@ export async function loadSnapshot(snapshotPath: string): Promise<Project | null
 }
 
 // 計算專案進度
-function calculateProgress(tasks: any[]): number {
+function calculateProgress(tasks: Task[]): number {
   if (!tasks || tasks.length === 0) return 0;
   
   const total = tasks.length;
@@ -232,5 +251,32 @@ export async function createCrashRecoverySnapshot(project: Project): Promise<voi
     await createSnapshot(project, 'Crash Recovery');
   } catch (error) {
     console.error('Failed to create crash recovery snapshot:', error);
+  }
+}
+
+// 刪除快照
+export async function deleteSnapshot(snapshotPath: string): Promise<void> {
+  try {
+    const appDataDir = await appLocalDataDir();
+    const indexPath = `${appDataDir}${SNAPSHOT_DIR}/${SNAPSHOT_INDEX}`;
+
+    // 刪除檔案
+    await removeFile(snapshotPath);
+
+    // 更新索引
+    if (await exists(indexPath)) {
+      try {
+        const content = await readTextFile(indexPath);
+        let snapshots: SnapshotInfo[] = JSON.parse(content);
+
+        snapshots = snapshots.filter(s => s.path !== snapshotPath);
+
+        await writeTextFile(indexPath, JSON.stringify(snapshots, null, 2));
+      } catch (error) {
+        console.error('Failed to update snapshot index:', error);
+      }
+    }
+  } catch (error) {
+    console.error('Failed to delete snapshot:', error);
   }
 }

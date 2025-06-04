@@ -425,10 +425,60 @@ export const sampleProject: Project = {
       },
       {
         id: "budget-cat-004",
-        name: "Testing & QA",
-        planned: 10000,
-        actual: 0
+      name: "Testing & QA",
+      planned: 10000,
+      actual: 0
       }
     ]
-  }
+  },
+  costs: [
+    {
+      id: "cost-001",
+      task_id: "task-004",
+      amount: 12000,
+      category: "人事",
+      currency: "USD",
+      date: "2025-03-20",
+      invoice_id: "INV-2025-0320-A",
+      status: "pending",
+      note: "Frontend contractor"
+    },
+    {
+      id: "cost-002",
+      task_id: "task-005",
+      amount: 8000,
+      category: "設備",
+      currency: "USD",
+      date: "2025-04-05",
+      invoice_id: "INV-2025-0405-B",
+      status: "paid",
+      note: "Server expenses"
+    }
+  ],
+  risks: [
+    {
+      id: "risk-001",
+      name: "資料遺失風險",
+      description: "使用者未儲存即關閉導致資料遺失",
+      probability: "medium",
+      impact: "high",
+      status: "identified",
+      mitigation: "增加自動備份頻率並提示儲存",
+      owner: "res-001",
+      createdAt: "2025-02-01T08:00:00Z",
+      updatedAt: "2025-02-01T08:00:00Z"
+    },
+    {
+      id: "risk-002",
+      name: "進度落後",
+      description: "開發進度可能因需求變更而延遲",
+      probability: "high",
+      impact: "medium",
+      status: "identified",
+      mitigation: "每週檢討進度並調整資源",
+      owner: "res-002",
+      createdAt: "2025-03-01T10:00:00Z",
+      updatedAt: "2025-03-01T10:00:00Z"
+    }
+  ]
 };

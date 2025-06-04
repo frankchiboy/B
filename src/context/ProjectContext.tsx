@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
-import { Project, Task, Resource } from '../types/projectTypes';
-import { sampleProject } from '../data/sampleProject';
+import { Project, Task, Resource, Risk, BudgetCategory, CostItem } from '../types/projectTypes';
 import { UndoRedoManager, UndoItem } from '../services/undoRedoManager';
-import { saveProject, openProject } from '../services/fileSystem';
+import { saveProject, openProject, openProjectFromPath } from '../services/fileSystem';
 import { createSnapshot, createCrashRecoverySnapshot } from '../services/snapshotManager';
 
 type ProjectState = 'UNINITIALIZED' | 'UNTITLED' | 'EDITING' | 'DIRTY' | 'SAVED' | 'CLOSING';
@@ -22,11 +21,20 @@ interface ProjectContextType {
   addResource: (resource: Resource) => void;
   updateResource: (resource: Resource) => void;
   deleteResource: (resourceId: string) => void;
+  addBudgetCategory: (category: BudgetCategory) => void;
+  updateBudgetCategory: (category: BudgetCategory) => void;
+  deleteBudgetCategory: (categoryId: string) => void;
+  addRisk: (risk: Risk) => void;
+  updateRisk: (risk: Risk) => void;
+  deleteRisk: (riskId: string) => void;
+  addCost: (cost: CostItem) => void;
+  updateCost: (cost: CostItem) => void;
+  deleteCost: (costId: string) => void;
   
   // 檔案操作
   saveCurrentProject: () => Promise<string>;
   saveProjectAs: () => Promise<string>;
-  openProjectFile: () => Promise<void>;
+  openProjectFile: (path?: string) => Promise<void>;
   createNewProject: () => void;
   
   // Undo/Redo
@@ -190,13 +198,13 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
-  const openProjectFile = async (): Promise<void> => {
+  const openProjectFile = async (path?: string): Promise<void> => {
     try {
-      const project = await openProject();
+      const project = path ? await openProjectFromPath(path) : await openProject();
       if (project) {
         setCurrentProject(project);
         setProjects(prev => [...prev.filter(p => p.id !== project.id), project]);
-        setCurrentFilePath(project.id);
+        setCurrentFilePath(path || project.id);
         setIsUntitled(false);
         transition('open');
       }
@@ -226,6 +234,8 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
         currency: 'USD',
         categories: []
       },
+      costs: [],
+      risks: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -471,6 +481,132 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     updateProject(updatedProject);
   };
 
+  const recalcBudget = (categories: BudgetCategory[]) => {
+    const total = categories.reduce((sum, c) => sum + c.planned, 0);
+    const spent = categories.reduce((sum, c) => sum + c.actual, 0);
+    return {
+      total,
+      spent,
+      remaining: total - spent,
+      currency: currentProject?.budget.currency || 'USD',
+      categories
+    };
+  };
+
+  const addBudgetCategory = (category: BudgetCategory) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const categories = [...currentProject.budget.categories, category];
+    const budget = recalcBudget(categories);
+    const updatedProject = {
+      ...currentProject,
+      budget
+    };
+    updateProject(updatedProject);
+  };
+
+  const updateBudgetCategory = (category: BudgetCategory) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const categories = currentProject.budget.categories.map(c => c.id === category.id ? category : c);
+    const budget = recalcBudget(categories);
+    const updatedProject = {
+      ...currentProject,
+      budget
+    };
+    updateProject(updatedProject);
+  };
+
+  const deleteBudgetCategory = (categoryId: string) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const categories = currentProject.budget.categories.filter(c => c.id !== categoryId);
+    const budget = recalcBudget(categories);
+    const updatedProject = {
+      ...currentProject,
+      budget
+    };
+    updateProject(updatedProject);
+  };
+
+  const addCost = (cost: CostItem) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const updatedProject = {
+      ...currentProject,
+      costs: [...currentProject.costs, cost]
+    };
+    updateProject(updatedProject);
+  };
+
+  const updateCost = (updatedCost: CostItem) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const updatedProject = {
+      ...currentProject,
+      costs: currentProject.costs.map(c => c.id === updatedCost.id ? updatedCost : c)
+    };
+    updateProject(updatedProject);
+  };
+
+  const deleteCost = (costId: string) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const updatedProject = {
+      ...currentProject,
+      costs: currentProject.costs.filter(c => c.id !== costId)
+    };
+    updateProject(updatedProject);
+  };
+
+  const addRisk = (risk: Risk) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const updatedProject = {
+      ...currentProject,
+      risks: [...currentProject.risks, risk]
+    };
+    updateProject(updatedProject);
+  };
+
+  const updateRisk = (updatedRisk: Risk) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const updatedProject = {
+      ...currentProject,
+      risks: currentProject.risks.map(r => r.id === updatedRisk.id ? updatedRisk : r)
+    };
+    updateProject(updatedProject);
+  };
+
+  const deleteRisk = (riskId: string) => {
+    if (!currentProject) return;
+
+    transition('edit');
+
+    const updatedProject = {
+      ...currentProject,
+      risks: currentProject.risks.filter(r => r.id !== riskId)
+    };
+    updateProject(updatedProject);
+  };
+
   return (
     <ProjectContext.Provider value={{
       currentProject,
@@ -491,6 +627,15 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
       addResource,
       updateResource,
       deleteResource,
+      addBudgetCategory,
+      updateBudgetCategory,
+      deleteBudgetCategory,
+      addRisk,
+      updateRisk,
+      deleteRisk,
+      addCost,
+      updateCost,
+      deleteCost,
       saveCurrentProject,
       saveProjectAs,
       openProjectFile,
