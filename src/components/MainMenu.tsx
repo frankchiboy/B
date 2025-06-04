@@ -64,8 +64,7 @@ const MainMenu: React.FC = () => {
   
   const handleOpenRecentProject = async (filePath: string) => {
     try {
-      // 實際實現中應該調用特定方法載入檔案
-      await openProjectFile();
+      await openProjectFile(filePath);
     } catch (error) {
       console.error('Failed to open recent project:', error);
       const confirmed = await confirm('無法開啟檔案，是否從最近開啟列表中移除？', {

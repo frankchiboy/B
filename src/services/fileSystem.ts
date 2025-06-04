@@ -199,6 +199,117 @@ export async function openProject(): Promise<Project | null> {
           description: projectData.description,
           startDate: projectData.start_date,
           endDate: projectData.end_date,
+// 直接從指定路徑開啟專案檔案
+export async function openProjectFromPath(path: string): Promise<Project | null> {
+  try {
+    const contentBuffer = await readBinaryFile(path);
+    const content = new Uint8Array(contentBuffer);
+
+    try {
+      const projectData = JSON.parse(new TextDecoder().decode(content));
+      const project = {
+        id: projectData.manifest?.project_uuid || crypto.randomUUID(),
+        name: projectData.project?.project_name || 'Untitled Project',
+        description: projectData.project?.description || '',
+        startDate: projectData.project?.start_date || new Date().toISOString(),
+        endDate:
+          projectData.project?.end_date ||
+          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        tasks: projectData.tasks || [],
+        resources: projectData.resources || [],
+        milestones: projectData.milestones || [],
+        teams: projectData.teams || [],
+        budget:
+          projectData.budget || {
+            total: 0,
+            spent: 0,
+            remaining: 0,
+            currency: 'USD',
+            categories: [],
+          },
+        costs: projectData.costs || [],
+        risks: projectData.risks || [],
+        status: 'active',
+        progress: calculateProgress(projectData.tasks || []),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as Project;
+
+      await updateRecentProjects(project.name, path, project.id);
+
+      return project;
+    } catch {
+      try {
+        const zip = new JSZip();
+        const zipData = await zip.loadAsync(content);
+
+        const manifestFile = await zipData.file('manifest.json')?.async('string');
+        const projectFile = await zipData.file('project.json')?.async('string');
+        const tasksFile = await zipData.file('tasks.json')?.async('string');
+        const resourcesFile = await zipData.file('resources.json')?.async('string');
+        const milestonesFile = await zipData.file('milestones.json')?.async('string');
+        const teamsFile = await zipData.file('teams.json')?.async('string');
+        const budgetFile = await zipData.file('budget.json')?.async('string');
+        const riskFile = await zipData.file('risklog.json')?.async('string');
+        const costsFile =
+          (await zipData.file('cost.json')?.async('string')) ||
+          (await zipData.file('costs.json')?.async('string'));
+
+        if (!manifestFile || !projectFile) {
+          throw new Error('Invalid project file format');
+        }
+
+        const manifest = JSON.parse(manifestFile);
+        const projectData = JSON.parse(projectFile);
+        const tasks = tasksFile ? JSON.parse(tasksFile) : [];
+        const resources = resourcesFile ? JSON.parse(resourcesFile) : [];
+        const milestones = milestonesFile ? JSON.parse(milestonesFile) : [];
+        const teams = teamsFile ? JSON.parse(teamsFile) : [];
+        const budget = budgetFile
+          ? JSON.parse(budgetFile)
+          : {
+              total: 0,
+              spent: 0,
+              remaining: 0,
+              currency: 'USD',
+              categories: [],
+            };
+        const risks = riskFile ? JSON.parse(riskFile) : [];
+        const costs = costsFile ? JSON.parse(costsFile) : [];
+
+        const project = {
+          id: manifest.project_uuid,
+          name: projectData.project_name,
+          description: projectData.description,
+          startDate: projectData.start_date,
+          endDate: projectData.end_date,
+          tasks,
+          resources,
+          milestones,
+          teams,
+          budget,
+          costs,
+          risks,
+          status: 'active',
+          progress: calculateProgress(tasks),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as Project;
+
+        await updateRecentProjects(project.name, path, project.id);
+
+        return project;
+      } catch (zipError) {
+        console.error('Failed to parse ZIP file:', zipError);
+        throw new Error('Invalid project file format');
+      }
+    }
+  } catch (error) {
+    console.error('Failed to open project:', error);
+    throw error;
+  }
+}
+
           tasks: tasks,
 function calculateProgress(tasks: Task[]): number {
     const existingIndex = recentProjects.findIndex(

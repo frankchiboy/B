@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { Project, Task, Resource, Risk, BudgetCategory, CostItem } from '../types/projectTypes';
 import { UndoRedoManager, UndoItem } from '../services/undoRedoManager';
-import { saveProject, openProject } from '../services/fileSystem';
+import { saveProject, openProject, openProjectFromPath } from '../services/fileSystem';
 import { createSnapshot, createCrashRecoverySnapshot } from '../services/snapshotManager';
 
 type ProjectState = 'UNINITIALIZED' | 'UNTITLED' | 'EDITING' | 'DIRTY' | 'SAVED' | 'CLOSING';
@@ -34,7 +34,7 @@ interface ProjectContextType {
   // 檔案操作
   saveCurrentProject: () => Promise<string>;
   saveProjectAs: () => Promise<string>;
-  openProjectFile: () => Promise<void>;
+  openProjectFile: (path?: string) => Promise<void>;
   createNewProject: () => void;
   
   // Undo/Redo
@@ -198,13 +198,13 @@ export const ProjectProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
-  const openProjectFile = async (): Promise<void> => {
+  const openProjectFile = async (path?: string): Promise<void> => {
     try {
-      const project = await openProject();
+      const project = path ? await openProjectFromPath(path) : await openProject();
       if (project) {
         setCurrentProject(project);
         setProjects(prev => [...prev.filter(p => p.id !== project.id), project]);
-        setCurrentFilePath(project.id);
+        setCurrentFilePath(path || project.id);
         setIsUntitled(false);
         transition('open');
       }
