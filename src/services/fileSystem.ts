@@ -56,7 +56,8 @@ export async function saveProject(project: Project, path?: string): Promise<stri
     zip.file("teams.json", JSON.stringify(projectPackage.teams, null, 2));
     zip.file("budget.json", JSON.stringify(projectPackage.budget, null, 2));
     zip.file("risklog.json", JSON.stringify(projectPackage.risks, null, 2));
-    zip.file("costs.json", JSON.stringify(projectPackage.costs, null, 2));
+    // 成本資料使用單數檔名 cost.json
+    zip.file("cost.json", JSON.stringify(projectPackage.costs, null, 2));
     
     // 添加附件資料夾
     zip.folder("attachments");
@@ -139,7 +140,10 @@ export async function openProject(): Promise<Project | null> {
           spent: 0,
           remaining: 0,
           currency: 'USD',
-          categories: []
+        // 舊版可能使用成本檔名 costs.json，仍需兼容
+        const costsFile =
+          (await zipData.file("cost.json")?.async("string")) ||
+          (await zipData.file("costs.json")?.async("string"));
         },
         risks: projectData.risks || [],
         status: 'active',
