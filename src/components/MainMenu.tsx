@@ -3,7 +3,7 @@ import { useProject } from '../context/ProjectContext';
 import { readTextFile, exists } from '@tauri-apps/api/fs';
 import { appLocalDataDir } from '@tauri-apps/api/path';
 import { Briefcase, FileText, Plus, FolderOpen, BookOpen } from 'lucide-react';
-import { checkCrashRecoveryFiles } from '../services/fileSystem';
+import { checkCrashRecoveryFiles, removeRecentProject } from '../services/fileSystem';
 import { loadSnapshot } from '../services/snapshotManager';
 import { confirm } from '@tauri-apps/api/dialog';
 
@@ -18,13 +18,13 @@ interface RecentProject {
 const MainMenu: React.FC = () => {
   const { createNewProject, openProjectFile, setCurrentProject } = useProject();
   const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  // 讀取最近專案與復原檔所需的狀態
+  // 不特別顯示載入指示，仍保留錯誤處理流程
   const [recoveryFilePath, setRecoveryFilePath] = useState<string | null>(null);
   
   useEffect(() => {
     const loadData = async () => {
       try {
-        setIsLoading(true);
         const appDataDir = await appLocalDataDir();
         const recentProjectsPath = `${appDataDir}recent_projects.json`;
         
@@ -45,10 +45,9 @@ const MainMenu: React.FC = () => {
         const recoveryPath = await checkCrashRecoveryFiles();
         setRecoveryFilePath(recoveryPath);
         
-        setIsLoading(false);
+        // 不顯示額外的載入指示
       } catch (error) {
         console.error('Failed to load data:', error);
-        setIsLoading(false);
       }
     };
     
@@ -65,8 +64,7 @@ const MainMenu: React.FC = () => {
   
   const handleOpenRecentProject = async (filePath: string) => {
     try {
-      // 實際實現中應該調用特定方法載入檔案
-      await openProjectFile();
+      await openProjectFile(filePath);
     } catch (error) {
       console.error('Failed to open recent project:', error);
       const confirmed = await confirm('無法開啟檔案，是否從最近開啟列表中移除？', {
@@ -75,8 +73,8 @@ const MainMenu: React.FC = () => {
       });
       
       if (confirmed) {
-        // 實際實現中應移除該檔案
         setRecentProjects(prev => prev.filter(p => p.filePath !== filePath));
+        await removeRecentProject(filePath);
       }
     }
   };
@@ -95,7 +93,7 @@ const MainMenu: React.FC = () => {
     }
   };
   
-  const handleCreateFromTemplate = (templateName: string) => {
+  const handleCreateFromTemplate = () => {
     // 實際實現中應載入特定範本
     createNewProject();
   };
@@ -179,7 +177,7 @@ const MainMenu: React.FC = () => {
               ].map(template => (
                 <button 
                   key={template.key}
-                  onClick={() => handleCreateFromTemplate(template.key)}
+                  onClick={handleCreateFromTemplate}
                   className="p-4 border border-slate-200 rounded-lg hover:border-purple-300 transition-colors flex items-center"
                 >
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center mr-3">

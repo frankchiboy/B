@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { X, AlertCircle, CheckCircle, ArrowRight, Briefcase, DivideIcon as LucideIcon } from 'lucide-react';
-import { useProject } from '../../context/ProjectContext';
+import { X, AlertCircle, CheckCircle, ArrowRight, Briefcase } from 'lucide-react';
 
 interface WelcomeOverlayProps {
   onClose: () => void;
@@ -16,7 +15,6 @@ interface StepInfo {
 
 const WelcomeOverlay: React.FC<WelcomeOverlayProps> = ({ onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const { currentProject } = useProject();
   
   const steps: StepInfo[] = [
     {
