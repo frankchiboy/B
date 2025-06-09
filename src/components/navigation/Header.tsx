@@ -17,7 +17,6 @@ export const Header: React.FC<HeaderProps> = ({ currentView }) => {
     createNewProject,
     hasUnsavedChanges,
     isUntitled,
-    closeProject,
     undo,
     redo,
     canUndo,

@@ -1,8 +1,8 @@
 export interface UndoItem {
   type: "edit-task" | "delete-task" | "assign-resource" | "create-task";
   targetId: string;
-  beforeState: any;
-  afterState: any;
+  beforeState: unknown;
+  afterState: unknown;
 }
 
 export class UndoRedoManager {
